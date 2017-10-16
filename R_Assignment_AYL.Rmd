@@ -1,0 +1,477 @@
+---
+title: "AYL_R_Assignment"
+output: html_notebook
+---
+### Part One
+## Data Inspection
+```{r}
+file.info("fang_et_al_genotypes.csv")
+file.info("snp_position.csv") 
+```
+size of fang_et_al_genotypes.csv = 11054722 bytes
+size of snp_position.csv = 83747 bytes
+
+```{r}
+a = read.csv("fang_et_al_genotypes.csv")
+b = read.csv("snp_position.csv")
+
+typeof(a)
+typeof(b)
+
+class(a)
+class(b)
+
+nrow(a)
+ncol(a)
+
+nrow(b)
+ncol(b)
+
+str(a)
+str(b)
+
+levels(b$gene)
+```
+typeof(a) = list
+typeof(b) = list
+
+class(a) = data.frame
+class(b) = data.frame
+
+fang_et_al_genotypes.csv row number: 2782
+fang_et_al_genotypes.csv column number (Sample ID): 986
+
+snp_position.csv row number (SNP ID): 983
+snp_position.csv column number: 15
+
+2782 observations of 986 variables
+983 observations of 15 variables
+547 genes in snp_position.csv
+
+```{r}
+summary(a$Group)
+```
+TRIPS : 22
+ZDIPL : 15
+ZLUXR : 17
+ZMHUE : 10
+ZMMIL : 290
+ZMMLR : 1256
+ZMMMR : 27
+ZMPBA : 900
+ZMPIL : 41
+ZMPJA : 34
+ZMXCH : 75
+ZMXCP : 69
+ZMXIL : 6
+ZMXNO : 7
+ZMXNT : 4
+ZPERR : 9
+
+## Data Processing
+
+# Maize Group
+1. Read the files, and make them data frame
+```{r}
+library(dplyr)
+a = read.csv("fang_et_al_genotypes.csv")
+a_df = tbl_df(a)
+b = read.csv("snp_position.csv")
+b_df = tbl_df(b)
+```
+
+2. Select columns "SNP_ID", "Chromosome", and "Position"
+```{r}
+b1 = select(b_df, SNP_ID, Chromosome, Position)
+```
+
+3. Select maize, then discard JG_OTU
+```{r}
+target = c("ZMMIL", "ZMMLR", "ZMMMR")
+a1 = filter(a_df, Group == target)
+a2 = select(a1, -JG_OTU)
+```
+
+4. Transpose the data frame, discard group name, and then set the new format
+```{r}
+a3 = t(a2)
+write.csv(a3, file = "a3.csv")
+a3 = read.csv("a3.csv", header = TRUE)
+a4 = tbl_df(a3[-c(2), ]) # discard Group
+colnames(a4) = as.character(unlist(a4[1, ])) #set new header
+a4 = a4[-1, ]#discard the repeat row
+```
+
+5. arrange the data frame with SNP_ID
+```{r}
+b2 = arrange(b1, SNP_ID)
+a5 = arrange(a4, Sample_ID)
+table(b2$SNP_ID %in% a5$Sample_ID) # Both have the same SNP_ID
+
+```
+
+6. Merge both file with the common SNP_ID
+```{r}
+ZM = merge(b2, a5, by.x="SNP_ID", by.y="Sample_ID")
+write.csv(ZM, file = "ZM.csv")
+```
+
+7. Sorting data set based on Position, then seperate differnt Chromosomes
+```{r}
+ZM_Decr = read.csv("ZM.csv", stringsAsFactors=FALSE)
+ZM_Incr = read.csv("ZM.csv", stringsAsFactors=FALSE)
+ZM_Decr[ZM_Decr== "?/?"]<- "-/-"
+ZM_Incr_df = tbl_df(ZM_Incr)
+ZM_Decr_df = tbl_df(ZM_Decr)
+ZM_Incr_df_2 = ZM_Incr_df[order(as.numeric(as.character(ZM_Incr_df$Position))), ]
+ZM_Decr_df_2 = ZM_Decr_df[order(-as.numeric(as.character(ZM_Decr_df$Position))), ]
+
+ZM_Ascend_Chr1 = filter (ZM_Incr_df_2, Chromosome == 1)
+ZM_Ascend_Chr2 = filter (ZM_Incr_df_2, Chromosome == 2)
+ZM_Ascend_Chr3 = filter (ZM_Incr_df_2, Chromosome == 3)
+ZM_Ascend_Chr4 = filter (ZM_Incr_df_2, Chromosome == 4)
+ZM_Ascend_Chr5 = filter (ZM_Incr_df_2, Chromosome == 5)
+ZM_Ascend_Chr6 = filter (ZM_Incr_df_2, Chromosome == 6)
+ZM_Ascend_Chr7 = filter (ZM_Incr_df_2, Chromosome == 7)
+ZM_Ascend_Chr8 = filter (ZM_Incr_df_2, Chromosome == 8)
+ZM_Ascend_Chr9 = filter (ZM_Incr_df_2, Chromosome == 9)
+ZM_Ascend_Chr10 = filter (ZM_Incr_df_2, Chromosome == 10)
+
+write.csv(ZM_Ascend_Chr1, file = "ZM_Ascend_Chr1.csv")
+write.csv(ZM_Ascend_Chr2, file = "ZM_Ascend_Chr2.csv")
+write.csv(ZM_Ascend_Chr3, file = "ZM_Ascend_Chr3.csv")
+write.csv(ZM_Ascend_Chr4, file = "ZM_Ascend_Chr4.csv")
+write.csv(ZM_Ascend_Chr5, file = "ZM_Ascend_Chr5.csv")
+write.csv(ZM_Ascend_Chr6, file = "ZM_Ascend_Chr6.csv")
+write.csv(ZM_Ascend_Chr7, file = "ZM_Ascend_Chr7.csv")
+write.csv(ZM_Ascend_Chr8, file = "ZM_Ascend_Chr8.csv")
+write.csv(ZM_Ascend_Chr9, file = "ZM_Ascend_Chr9.csv")
+write.csv(ZM_Ascend_Chr10, file = "ZM_Ascend_Chr10.csv")
+
+ZM_Descend_Chr1 = filter (ZM_Decr_df_2, Chromosome == 1)
+ZM_Descend_Chr2 = filter (ZM_Decr_df_2, Chromosome == 2)
+ZM_Descend_Chr3 = filter (ZM_Decr_df_2, Chromosome == 3)
+ZM_Descend_Chr4 = filter (ZM_Decr_df_2, Chromosome == 4)
+ZM_Descend_Chr5 = filter (ZM_Decr_df_2, Chromosome == 5)
+ZM_Descend_Chr6 = filter (ZM_Decr_df_2, Chromosome == 6)
+ZM_Descend_Chr7 = filter (ZM_Decr_df_2, Chromosome == 7)
+ZM_Descend_Chr8 = filter (ZM_Decr_df_2, Chromosome == 8)
+ZM_Descend_Chr9 = filter (ZM_Decr_df_2, Chromosome == 9)
+ZM_Descend_Chr10 = filter (ZM_Decr_df_2, Chromosome == 10)
+
+write.csv(ZM_Descend_Chr1, file = "ZM_Descend_Chr1.csv")
+write.csv(ZM_Descend_Chr2, file = "ZM_Descend_Chr2.csv")
+write.csv(ZM_Descend_Chr3, file = "ZM_Descend_Chr3.csv")
+write.csv(ZM_Descend_Chr4, file = "ZM_Descend_Chr4.csv")
+write.csv(ZM_Descend_Chr5, file = "ZM_Descend_Chr5.csv")
+write.csv(ZM_Descend_Chr6, file = "ZM_Descend_Chr6.csv")
+write.csv(ZM_Descend_Chr7, file = "ZM_Descend_Chr7.csv")
+write.csv(ZM_Descend_Chr8, file = "ZM_Descend_Chr8.csv")
+write.csv(ZM_Descend_Chr9, file = "ZM_Descend_Chr9.csv")
+write.csv(ZM_Descend_Chr10, file = "ZM_Descend_Chr10.csv")
+```
+
+# Teosinate Group
+1. Read the files, and make them data frame
+```{r}
+library(dplyr)
+a = read.csv("fang_et_al_genotypes.csv")
+a_df = tbl_df(a)
+b = read.csv("snp_position.csv")
+b_df = tbl_df(b)
+```
+
+2. Select columns "SNP_ID", "Chromosome", and "Position"
+```{r}
+b1 = select(b_df, SNP_ID, Chromosome, Position)
+```
+
+3. Select maize, then discard JG_OTU
+```{r}
+target = c("ZMPBA", "ZMPIL", "ZMPJA")
+a1 = filter(a_df, Group == target)
+a2 = select(a1, -JG_OTU)
+```
+
+4. Transpose the data frame, discard group name, and then set a new format
+```{r}
+a3 = t(a2)
+write.csv(a3, file = "a6.csv")
+a3 = read.csv("a6.csv", header = TRUE)
+a4 = tbl_df(a3[-c(2), ])
+colnames(a4) = as.character(unlist(a4[1, ]))
+a4 = a4[-1, ]#discard the repeat row
+```
+
+5. arrange the data frame with SNP_ID
+```{r}
+b2 = arrange(b1, SNP_ID)
+a5 = arrange(a4, Sample_ID)
+table(b2$SNP_ID %in% a5$Sample_ID) # Both have the same SNP_ID
+```
+
+6. Merge both file with the common SNP_ID
+```{r}
+Teo = merge(b2, a5, by.x="SNP_ID", by.y="Sample_ID")
+write.csv(Teo, file = "Teo.csv")
+```
+
+7. Sorting data set based on Position, then seperate differnt Chromosomes
+```{r}
+Teo_Decr = read.csv("Teo.csv", stringsAsFactors=FALSE)
+Teo_Incr = read.csv("Teo.csv", stringsAsFactors=FALSE)
+Teo_Decr[Teo_Decr== "?/?"]<- "-/-"
+Teo_Incr_df = tbl_df(Teo_Incr)
+Teo_Decr_df = tbl_df(Teo_Decr)
+Teo_Incr_df_2 = Teo_Incr_df[order(as.numeric(as.character(Teo_Incr_df$Position))), ]
+Teo_Decr_df_2 = Teo_Decr_df[order(-as.numeric(as.character(Teo_Decr_df$Position))), ]
+
+Teo_Ascend_Chr1 = filter (Teo_Incr_df_2, Chromosome == 1)
+Teo_Ascend_Chr2 = filter (Teo_Incr_df_2, Chromosome == 2)
+Teo_Ascend_Chr3 = filter (Teo_Incr_df_2, Chromosome == 3)
+Teo_Ascend_Chr4 = filter (Teo_Incr_df_2, Chromosome == 4)
+Teo_Ascend_Chr5 = filter (Teo_Incr_df_2, Chromosome == 5)
+Teo_Ascend_Chr6 = filter (Teo_Incr_df_2, Chromosome == 6)
+Teo_Ascend_Chr7 = filter (Teo_Incr_df_2, Chromosome == 7)
+Teo_Ascend_Chr8 = filter (Teo_Incr_df_2, Chromosome == 8)
+Teo_Ascend_Chr9 = filter (Teo_Incr_df_2, Chromosome == 9)
+Teo_Ascend_Chr10 = filter (Teo_Incr_df_2, Chromosome == 10)
+
+write.csv(Teo_Ascend_Chr1, file = "Teo_Ascend_Chr1.csv")
+write.csv(Teo_Ascend_Chr2, file = "Teo_Ascend_Chr2.csv")
+write.csv(Teo_Ascend_Chr3, file = "Teo_Ascend_Chr3.csv")
+write.csv(Teo_Ascend_Chr4, file = "Teo_Ascend_Chr4.csv")
+write.csv(Teo_Ascend_Chr5, file = "Teo_Ascend_Chr5.csv")
+write.csv(Teo_Ascend_Chr6, file = "Teo_Ascend_Chr6.csv")
+write.csv(Teo_Ascend_Chr7, file = "Teo_Ascend_Chr7.csv")
+write.csv(Teo_Ascend_Chr8, file = "Teo_Ascend_Chr8.csv")
+write.csv(Teo_Ascend_Chr9, file = "Teo_Ascend_Chr9.csv")
+write.csv(Teo_Ascend_Chr10, file = "Teo_Ascend_Chr10.csv")
+
+Teo_Descend_Chr1 = filter (Teo_Decr_df_2, Chromosome == 1)
+Teo_Descend_Chr2 = filter (Teo_Decr_df_2, Chromosome == 2)
+Teo_Descend_Chr3 = filter (Teo_Decr_df_2, Chromosome == 3)
+Teo_Descend_Chr4 = filter (Teo_Decr_df_2, Chromosome == 4)
+Teo_Descend_Chr5 = filter (Teo_Decr_df_2, Chromosome == 5)
+Teo_Descend_Chr6 = filter (Teo_Decr_df_2, Chromosome == 6)
+Teo_Descend_Chr7 = filter (Teo_Decr_df_2, Chromosome == 7)
+Teo_Descend_Chr8 = filter (Teo_Decr_df_2, Chromosome == 8)
+Teo_Descend_Chr9 = filter (Teo_Decr_df_2, Chromosome == 9)
+Teo_Descend_Chr10 = filter (Teo_Decr_df_2, Chromosome == 10)
+
+write.csv(Teo_Descend_Chr1, file = "Teo_Descend_Chr1.csv")
+write.csv(Teo_Descend_Chr2, file = "Teo_Descend_Chr2.csv")
+write.csv(Teo_Descend_Chr3, file = "Teo_Descend_Chr3.csv")
+write.csv(Teo_Descend_Chr4, file = "Teo_Descend_Chr4.csv")
+write.csv(Teo_Descend_Chr5, file = "Teo_Descend_Chr5.csv")
+write.csv(Teo_Descend_Chr6, file = "Teo_Descend_Chr6.csv")
+write.csv(Teo_Descend_Chr7, file = "Teo_Descend_Chr7.csv")
+write.csv(Teo_Descend_Chr8, file = "Teo_Descend_Chr8.csv")
+write.csv(Teo_Descend_Chr9, file = "Teo_Descend_Chr9.csv")
+write.csv(Teo_Descend_Chr10, file = "Teo_Descend_Chr10.csv")
+```
+
+
+### Part Two Plotting
+# SNPs per chromosome: Result = SNP_per_chromosome.pdf
+1. Read files
+```{r}
+library(dplyr)
+a = read.csv("fang_et_al_genotypes.csv")
+a_df = tbl_df(a)
+b = read.csv("snp_position.csv")
+b_df = tbl_df(b)
+```
+
+2. Take out column "SNP_ID", "Chromosome", and "Position"
+```{r}
+b1 = select(b_df, SNP_ID, Chromosome, Position)
+```
+
+3. Discard JG_OTU, transpose data frame, then set a new format
+```{r}
+a2 = select(a_df, -JG_OTU)
+a3 = t(a2)
+write.csv(a3, file = "a3.csv")
+a3 = read.csv("a3.csv", header = TRUE)
+a4 = tbl_df(a3[-c(2), ])
+colnames(a4) = as.character(unlist(a4[1, ]))
+a4 = a4[-1, ]
+```
+
+4. Arrange the data frame with SNP_ID
+```{r}
+b2 = arrange(b1, SNP_ID)
+a5 = arrange(a4, Sample_ID)
+table(b2$SNP_ID %in% a5$Sample_ID)
+All = merge(b2, a5, by.x="SNP_ID", by.y="Sample_ID")
+write.csv(All, file = "All.csv")
+```
+
+5. Sorting then plotting (File: SNP_per_chromosome.pdf)
+```{r}
+All_1 = melt(All, id.vars=c("Chromosome", "SNP_ID"), value = c(Position))
+All_1$Chromosome = factor(All_1$Chromosome, levels = c((1:10), "multiple", "unknown"))
+
+library(ggplot2)
+ggplot(All_1, aes(x=as.factor(Chromosome))) + geom_bar() + labs(x = "Chromosome", y = "SNP_Count")
+```
+
+
+# Missing data and amount of heterozygosity : Results = Heterozugosity_Group.pdf, Heterozugosity_Sample.pdf
+```{r}
+library("reshape2")
+library(dplyr)
+library(plyr)
+library(ggplot2)
+```
+
+1. read the file
+```{r}
+fang = read.csv("fang_et_al_genotypes.csv", stringsAsFactors=FALSE)
+```
+
+2. Get tge SNP_ID
+```{r}
+genotypes = colnames(fang)[-c(1:3)]
+```
+
+3. Melt function, rearranging with SNP's IDs
+```{r}
+genotypes_melt = melt(fang, measure.vars = genotypes)
+```
+
+4. recoding ?/? as NA
+```{r}
+genotypes_melt[genotypes_melt == "?/?" ] = NA
+```
+
+5. Creating a new column to indicate homozygousity/Heterozygosity/NA
+```{r}
+genotypes_melt$Homo = (genotypes_melt$value=="A/A" | genotypes_melt$value=="C/C" | genotypes_melt$value=="G/G" | genotypes_melt$value=="T/T")
+```
+
+6. Sorting data frame using Group and Species_ID values
+```{r}
+genotypes_SampleID = genotypes_melt[order(genotypes_melt$Sample_ID), ]
+genotypes_Group = genotypes_melt[order(genotypes_melt$Group), ]
+```
+
+7. Calculate Homozygoussity and Heterozygoussity and NA
+```{r}
+proportions_ID = ddply(genotypes_SampleID, c("Sample_ID"), summarise, Homozygous=sum(Homo, na.rm=TRUE), Heterozygous=sum(!Homo, na.rm=TRUE), isNA=sum(is.na(Homo)))
+```
+
+8. Melt function with "Homozygous", "Heterozygous", and "isNA"
+```{r}
+proportions_ID_melt = melt(proportions_ID, measure.vars = c("Homozygous", "Heterozygous", "isNA"))
+```
+
+9. graph that shows the proportion of homozygoussity, heterozygous and missing data in each Sample_ID 
+```{r}
+ggplot(proportions_ID_melt, aes(x = Sample_ID, y= value, fill=variable)) + geom_bar(stat = "identity", position = "stack")
+```
+
+10. graph that shows the proportion of homozygoussity, heterozygous and missing data in each Group
+```{r}
+proportions_Group = ddply(genotypes_Group, c("Group"), summarise, Homozygous=sum(Homo, na.rm=TRUE), Heterozygous=sum(!Homo, na.rm=TRUE), isNA=sum(is.na(Homo)))
+proportions_Group_melt = melt(proportions_Group, measure.vars = c("Homozygous", "Heterozygous", "isNA"))
+ggplot(proportions_Group_melt, aes(x = Group, y= value, fill=variable)) + geom_bar(stat = "identity", position = "fill")
+```
+Files = Heterozugosity_Group.pdf, Heterozugosity_Sample.pdf
+
+#Your own visualization: File = Diversity_SNP_ID.pdf
+Plotting the proportion of homozygosity, Heterozygosity, and missing data in every SNP ID
+```{r}
+library("reshape2")
+library(dplyr)
+library(plyr)
+library(ggplot2)
+```
+
+1. Read files
+```{r}
+a = read.csv("fang_et_al_genotypes.csv")
+a_df = tbl_df(a)
+b = read.csv("snp_position.csv")
+b_df = tbl_df(b)
+```
+
+2. select column "SNP_ID", "Chromosome", and "Position", Discard JG_OTU, transpose data frame, then set a new format
+```{r}
+b1 = select(b_df, SNP_ID, Chromosome, Position)
+a2 = select(a_df, -JG_OTU)
+a3 = t(a2)
+write.csv(a3, file = "a3.csv")
+a3 = read.csv("a3.csv", header = TRUE)
+a4 = tbl_df(a3[-c(2), ])
+colnames(a4) = as.character(unlist(a4[1, ]))
+a4 = a4[-1, ]
+```
+
+3. Get SNP ID
+```{r}
+Sample = colnames(a4)[-c(1)]
+```
+
+4. using melt function and rearrange by SNP ID
+```{r}
+a4_melt = melt(a4, measure.vars = Sample)
+```
+
+5. replacing ?/? with NA
+```{r}
+a4_melt[a4_melt == "?/?" ] = NA
+```
+
+6. Creating a new column Homo to indicate homozygosity/heterozygosity
+```{r}
+a4_melt$Homo = (a4_melt$value=="A/A" | genotypes_melt$value=="C/C" | genotypes_melt$value=="G/G" | genotypes_melt$value=="T/T")
+```
+
+7. Sorting dataframe with SNP genotype
+```{r}
+genotypes_SampleID = a4_melt[order(a4_melt$Sample_ID),]
+```
+
+8. Calculating Homozygousity
+```{r}
+Homozygosity = ddply(genotypes_SampleID, c("Sample_ID"), summarise, Homozygous=sum(Homo, na.rm=TRUE), Heterozygous=sum(!Homo, na.rm=TRUE), isNA=sum(is.na(Homo)))
+```
+
+9. using melt function
+```{r}
+Homozygosity_melt = melt(Homozygosity, measure.vars = c("Homozygous", "Heterozygous", "isNA"))
+```
+
+10. graph that shows the proportion of homozygous and heterozygous sites as well as missing data in each SNP ID 
+```{r}
+ggplot(Homozygosity_melt, aes(x = Sample_ID, y= value, fill=variable)) + geom_bar(stat = "identity", position = "fill") + labs(x = "SNP_ID", y = "Proportion")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
