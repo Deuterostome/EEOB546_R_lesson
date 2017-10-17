@@ -1,0 +1,30 @@
+---
+title: "Nadital Review of Deuterostome R Project"
+author: "nadital"
+date: "October 17, 2017"
+output: html_document
+
+# R Markdown of Review for Deuterostome R Project
+
+## General Review:
+
+Missing the initial download of the files. Not sure if that was required or if files were saved to harddrive. 
+
+Scripts and functions were easy to read. However, would have appreciated more information. 
+
+For example, not just what you were doing, but why:
+3. Melt function, rearranging with SNP's IDs *melting files to tidy columns to allow for combined data for visualization.*
+
+R Notebook file was nicely organized, with clear formatting to indicate which steps were taken.
+
+## Specific review:
+
+All 40 files are present, and in a separate directory.
+
+Plots are clear and easy to read, with all appropriate labels and legends. 
+
+Summary of group was a good idea. Good unique data inspection that I hadn't considered. 
+
+##Overall:
+
+I would say this project was completed successfully. All required files and graphs were created.
