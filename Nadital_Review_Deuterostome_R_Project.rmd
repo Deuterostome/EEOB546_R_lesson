@@ -27,4 +27,5 @@ Summary of group was a good idea. Good unique data inspection that I hadn't cons
 
 ##Overall:
 
-I would say this project was completed successfully. All required files and graphs were created. I'd give it a 15/15
+I would say this project was completed successfully. All required files and graphs were created. Data and observations
+were similar to what I had. Plots were very similar. I'd give it a 15/15
