@@ -1,0 +1,7 @@
+---
+title: "Anast_Review"
+author: "Justin ANast"
+date: "October 17, 2017"
+output: html_document
+
+1. you didn't have a link to your files or have them in the directory. With out having links in your code to the files or having them in your directory I was unable to run the rest of the code with my time left. SO I looked over your code and it looks simmilar to mine. Should work in theory. So good job
